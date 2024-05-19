@@ -22,23 +22,24 @@ function isSuccessful(response) {
    }
    self.addEventListener('fetch', function (event) {
     event.respondWith(
-    caches.match(event.request)
-    .then(function (response) {
-    if (response) {
-    return response; // Cache hit
-    }
-    return fetch(event.request.clone())
-    .then(function (response) {
-    if (!isSuccessful(response)) {
-    return response;
-    }
-    caches.open(CACHE_NAME)
-    .then(function (cache) {
-    cache.put(event.request, response.clone());
-    });
-    return response;
-    }
+        caches.match(event.request)
+            .then(function (response) {
+                if (response) {
+                    return response; // Cache hit
+                }
+                return fetch(event.request.clone())
+                    .then(function (response) {
+                        let responseClone = response.clone(); // Clone the response immediately
+                        if (!isSuccessful(responseClone)) {
+                            return response;
+                        }
+                        caches.open(CACHE_NAME)
+                            .then(function (cache) {
+                                cache.put(event.request, responseClone);
+                            });
+                        return response;
+                    }
+                    );
+            })
     );
-    })
-    );
-   });
+});
